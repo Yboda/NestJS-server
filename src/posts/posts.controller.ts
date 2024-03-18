@@ -24,7 +24,7 @@ export class PostsController {
   // pass parameter = :something으로 표현
   @Get(':id')
   getPost(@Param('id') id: string) {
-    return this.postsService.getPostById(id);
+    return this.postsService.getPostById(+id);
   }
 
   @Post()
@@ -43,11 +43,11 @@ export class PostsController {
     @Body('title') title?: string,
     @Body('content') content?: string,
   ) {
-    return this.postsService.updatePost(id, author, title, content);
+    return this.postsService.updatePost(+id, author, title, content);
   }
 
   @Delete(':id')
   deletePosts(@Param('id') id: string) {
-    return this.postsService.deletePost(id);
+    return this.postsService.deletePost(+id);
   }
 }
