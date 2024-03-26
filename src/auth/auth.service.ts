@@ -10,7 +10,79 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) {}
+
   /**
+   * 헤더에서 토큰 추출 로직
+   */
+  extractTokenFromHeader(header: string, isBearer: boolean) {
+    // 'Basic {token}' or 'Bearer {token}' 을 스플릿
+    const splitToken = header.split(' ');
+
+    const prefix = isBearer ? 'Bearer' : 'Basic';
+
+    if (splitToken.length !== 2 || splitToken[0] !== prefix) {
+      throw new UnauthorizedException('잘못된 토큰입니다!');
+    }
+
+    const token = splitToken[1];
+
+    return token;
+  }
+
+  /**
+   * email:password 형식으로 base64 incode 되어있는 basic token에서 email, password 추출
+   */
+  decodeBasicToken(base64TokenString: string) {
+    const decoded = Buffer.from(base64TokenString, 'base64').toString('utf8');
+
+    const [email, password] = decoded.split(':');
+
+    if (!email || !password) {
+      throw new UnauthorizedException('잘못된 유형의 토큰입니다.');
+    }
+
+    return {
+      email,
+      password,
+    };
+  }
+
+  /**
+   * 토큰 재발급 로직
+   */
+  // 1. 토큰 검증
+  verifyToken(token: string) {
+    return this.jwtService.verify(token, {
+      secret: JWT_SECRET,
+    });
+  }
+  // 2.재발급
+  rotateToken(token: string, isRefreshToken: boolean) {
+    const decoded = this.jwtService.verify(token, {
+      secret: JWT_SECRET,
+    });
+    /**
+     * sub: id
+     * email: email,
+     * type: 'access' | 'refresh'
+     */
+    if (decoded.type !== 'refresh') {
+      throw new UnauthorizedException(
+        '토큰 재발급은 refresh 토큰으로만 가능합니다.',
+      );
+    }
+
+    return this.signToken(
+      {
+        ...decoded,
+      },
+      isRefreshToken,
+    );
+  }
+
+  /**
+   * 로그인 / 회원가입 로직
+   *
    * 1) registerWithEmail
    *  - email, nickname, password를 입력받아 사용자 생성 -> access & refresh token 반환 (로그인까지)
    *
