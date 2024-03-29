@@ -14,9 +14,9 @@ export class AuthService {
   /**
    * 헤더에서 토큰 추출 로직
    */
-  extractTokenFromHeader(header: string, isBearer: boolean) {
+  extractTokenFromHeader(tokenString: string, isBearer: boolean) {
     // 'Basic {token}' or 'Bearer {token}' 을 스플릿
-    const splitToken = header.split(' ');
+    const splitToken = tokenString.split(' ');
 
     const prefix = isBearer ? 'Bearer' : 'Basic';
 
