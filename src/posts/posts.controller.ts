@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
@@ -12,6 +13,8 @@ import { PostsService } from './posts.service';
 import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { User } from 'src/users/decorator/user.decorator';
 import { UsersModel } from 'src/users/entities/users.entity';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 /* 컨트롤러는 요청을 받아서 알맞은 로직실행함수와 연결시켜주는 역할이며, 
  여기에서 직접적으로 로직을 작성하지 않도록 한다. */
@@ -33,21 +36,16 @@ export class PostsController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(
-    @User() user: UsersModel,
-    @Body('title') title: string,
-    @Body('content') content: string,
-  ) {
-    return this.postsService.createPost(user.id, title, content);
+  postPosts(@User('id') id: number, @Body() body: CreatePostDto) {
+    return this.postsService.createPost(id, body);
   }
 
   @Patch(':id')
   patchPost(
-    @Param('id') id: string,
-    @Body('title') title?: string,
-    @Body('content') content?: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdatePostDto,
   ) {
-    return this.postsService.updatePost(+id, title, content);
+    return this.postsService.updatePost(id, body);
   }
 
   @Delete(':id')
