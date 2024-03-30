@@ -6,8 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
+import { User } from 'src/users/decorator/user.decorator';
+import { UsersModel } from 'src/users/entities/users.entity';
 
 /* 컨트롤러는 요청을 받아서 알맞은 로직실행함수와 연결시켜주는 역할이며, 
  여기에서 직접적으로 로직을 작성하지 않도록 한다. */
@@ -28,12 +32,13 @@ export class PostsController {
   }
 
   @Post()
+  @UseGuards(AccessTokenGuard)
   postPosts(
-    @Body('authorId') authorId: number,
+    @User() user: UsersModel,
     @Body('title') title: string,
     @Body('content') content: string,
   ) {
-    return this.postsService.createPost(authorId, title, content);
+    return this.postsService.createPost(user.id, title, content);
   }
 
   @Patch(':id')
